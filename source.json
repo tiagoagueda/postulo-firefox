@@ -1,0 +1,5 @@
+{
+  "repository": "https://source.tiagoagueda.com/tiagoagueda/postulo-chromium.git",
+  "ref": "main",
+  "note": "The commit or tag of postulo-chromium this Firefox package is built from. Pin a tag for a release."
+}

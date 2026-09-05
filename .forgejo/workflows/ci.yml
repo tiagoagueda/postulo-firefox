@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: node:22-bookworm
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - name: Assemble the Firefox build from the shared source
+        run: npm run build
+      - name: Lint it
+        run: npx web-ext lint --source-dir dist
+      - name: Package it
+        run: npx web-ext build --source-dir dist --overwrite-dest
+      - uses: actions/upload-artifact@v3
+        continue-on-error: true
+        with:
+          name: firefox-package
+          path: web-ext-artifacts

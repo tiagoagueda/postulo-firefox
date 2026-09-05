@@ -1,0 +1,18 @@
+{
+  "name": "postulo-firefox",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The Postulo browser extension for Firefox and its forks, built from the shared source in postulo-chromium.",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "lint": "npm run build && web-ext lint --source-dir dist",
+    "package": "npm run build && web-ext build --source-dir dist --overwrite-dest",
+    "run": "npm run build && web-ext run --source-dir dist",
+    "sign": "npm run build && web-ext sign --source-dir dist --channel unlisted"
+  },
+  "devDependencies": {
+    "web-ext": "^8.0.0"
+  },
+  "license": "AGPL-3.0-or-later"
+}
