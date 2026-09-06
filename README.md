@@ -2,10 +2,10 @@
 
 **The Postulo browser extension for Firefox, Firefox for Android, and the forks —
 LibreWolf, Zen, Waterfox, Floorp.** One button sends the job posting you are looking at to
-your own [Postulo](https://source.tiagoagueda.com/tiagoagueda/postulo), for review.
+your own [Postulo](https://source.tiagoagueda.com/postulo/postulo), for review.
 
 The code is the same as the Chromium extension and lives in
-[postulo-chromium](https://source.tiagoagueda.com/tiagoagueda/postulo-chromium), which
+[postulo-chromium](https://source.tiagoagueda.com/postulo/postulo-chromium), which
 builds for both browsers from one source. This repository holds what Firefox and
 addons.mozilla.org need and nothing else: the pin to the shared source (`source.json`), the
 build that assembles the Firefox package from it, the signing and listing notes, and CI.
