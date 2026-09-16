@@ -26,19 +26,39 @@ Everything in postulo-chromium's README about privacy and setup applies here.
   from your AMO account); Developer Edition and Nightly load `dist/` unsigned from
   `about:debugging` for development.
 - **Android.** Firefox for Android installs from addons.mozilla.org, so a capture from a
-  phone comes with the listing. `strict_min_version` is 128 for both.
+  phone comes with the listing.
+- **Minimum version.** The shared manifest declares `data_collection_permissions`
+  (`required: ["none"]` — the extension collects nothing), which Firefox understands from
+  140 and Firefox for Android from 142. `strict_min_version` says so: 140 on desktop, 142
+  on Android. An older Firefox would install the extension and ignore the declaration,
+  which is the one thing a declaration about data must not do. Both values live in
+  postulo-chromium's `src/manifest.json`, the one manifest, and reach here through the pin.
 
 ## Build
 
 ```sh
 npm ci
+npm run check:pin  # source.json pins something that cannot move
 npm run build      # clones postulo-chromium at the pinned ref and assembles dist/
 npm run lint       # web-ext lint on dist/
 npm run package    # a zip under web-ext-artifacts/
 ```
 
-To ship a new version: tag postulo-chromium, put the tag in `source.json`, and run
-`npm run sign` (or upload the packaged zip on addons.mozilla.org).
+## The pin
+
+`source.json` names the commit of postulo-chromium this package is built from, and it is
+never a branch. addons.mozilla.org rebuilds a source submission and compares it to the
+package: with `"ref": "main"` the reviewer's build is a later extension than the submitted
+one, and the Firefox and Chromium extensions quietly stop being the same extension.
+`npm run check:pin`, which CI runs before the build, refuses a branch or `HEAD`, and — once
+postulo-chromium cuts its first tag — refuses any pin that is not the latest of them.
+postulo-chromium has no tag yet, so the pin is the full commit SHA of its `main`; the check
+says how far that is from the tip, and the first tag replaces it.
+
+To ship a new version: tag postulo-chromium, put the tag in `source.json`, tag this
+repository `vX.Y.Z` — CI then builds, lints and leaves the zip as an artifact — and run
+`npm run sign` (or upload that zip on addons.mozilla.org). Signing is not done in CI: it
+needs the AMO credentials.
 
 ## Licence
 

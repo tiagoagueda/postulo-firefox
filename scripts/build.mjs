@@ -20,6 +20,17 @@ mkdirSync(".source", { recursive: true });
 execFileSync("git", ["clone", "--quiet", "--no-checkout", pin.repository, checkout], { stdio: "inherit" });
 execFileSync("git", ["-C", checkout, "checkout", "--quiet", pin.ref], { stdio: "inherit" });
 
+// Which commit that actually was. A pin that moved between two builds is the one thing
+// this repository exists to prevent, so the build says what it built and refuses a pin
+// that turned out to be a branch: see scripts/check-pin.mjs, which CI runs first.
+const at = execFileSync("git", ["-C", checkout, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+const branches = execFileSync("git", ["-C", checkout, "branch", "--remotes", "--list", `origin/${pin.ref}`], {
+  encoding: "utf8",
+}).trim();
+if (branches) {
+  throw new Error(`source.json pins "${pin.ref}", which is a branch and moves; pin a tag or a commit SHA.`);
+}
+
 execFileSync("node", ["scripts/build.mjs", "firefox"], { cwd: checkout, stdio: "inherit" });
 
 const built = join(checkout, "dist", "firefox");
@@ -28,4 +39,4 @@ if (!existsSync(join(built, "manifest.json"))) {
 }
 rmSync("dist", { recursive: true, force: true });
 cpSync(built, "dist", { recursive: true });
-console.log(`dist/ built from ${pin.repository} at ${pin.ref}`);
+console.log(`dist/ built from ${pin.repository} at ${pin.ref} (${at})`);

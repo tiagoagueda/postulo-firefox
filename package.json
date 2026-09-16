@@ -5,6 +5,7 @@
   "description": "The Postulo browser extension for Firefox and its forks, built from the shared source in postulo-chromium.",
   "type": "module",
   "scripts": {
+    "check:pin": "node scripts/check-pin.mjs",
     "build": "node scripts/build.mjs",
     "lint": "npm run build && web-ext lint --source-dir dist",
     "package": "npm run build && web-ext build --source-dir dist --overwrite-dest",
