@@ -3,7 +3,6 @@ name: CI
 on:
   push:
     branches: [main]
-    tags: ["v*"]
   pull_request:
 
 jobs:
@@ -31,29 +30,3 @@ jobs:
         with:
           name: firefox-package
           path: web-ext-artifacts
-
-  # The zip to upload to addons.mozilla.org, built from the tag rather than from a working
-  # copy, so that what is submitted is what the tag says. Signing stays a hand operation
-  # (`npm run sign`): it needs the AMO credentials, which do not belong in a runner.
-  release:
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: build
-    runs-on: ubuntu-latest
-    container:
-      image: node:22-bookworm
-    steps:
-      - uses: actions/checkout@v4
-      - run: npm ci
-      - name: Check the pin does not move
-        run: npm run check:pin
-      - name: Assemble the Firefox build from the shared source
-        run: npm run build
-      - name: Lint it
-        run: npx web-ext lint --source-dir dist
-      - name: Package it
-        run: npx web-ext build --source-dir dist --overwrite-dest
-      - uses: actions/upload-artifact@v3
-        with:
-          name: firefox-package-${{ github.ref_name }}
-          path: web-ext-artifacts/*.zip
-          if-no-files-found: error

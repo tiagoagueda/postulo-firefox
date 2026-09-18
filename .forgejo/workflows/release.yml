@@ -1,0 +1,40 @@
+# The zip to upload to addons.mozilla.org, built from the tag rather than from a working
+# copy, so that what is submitted is what the tag says. Signing stays a hand operation
+# (`npm run sign`): it needs the AMO credentials, which do not belong in a runner.
+#
+# A workflow of its own, on purpose. This job used to sit in ci.yml behind
+# `if: startsWith(github.ref, 'refs/tags/v')` and `needs: build`, and on every push to
+# main the runner picked it up anyway and ended it in four lines -- "'runs-on' key not
+# defined in CI/build", "Early termination" -- so every push was red for a job that had
+# nothing to do. Forgejo hands a job to a runner before the condition that would skip it is
+# worth anything (the shape of postulo/postulo#81). A workflow that only exists on a tag
+# push cannot be handed anything else (postulo/postulo#251).
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    container:
+      image: node:22-bookworm
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - name: Check the pin does not move
+        run: npm run check:pin
+      - name: Assemble the Firefox build from the shared source
+        run: npm run build
+      - name: Lint it
+        run: npx web-ext lint --source-dir dist
+      - name: Package it
+        run: npx web-ext build --source-dir dist --overwrite-dest
+      # v3: the artifact action this Forgejo accepts (see ci.yml). An empty release is an
+      # error rather than a surprise.
+      - uses: actions/upload-artifact@v3
+        with:
+          name: firefox-package-${{ github.ref_name }}
+          path: web-ext-artifacts/*.zip
+          if-no-files-found: error
