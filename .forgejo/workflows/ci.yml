@@ -22,7 +22,12 @@ jobs:
         run: npx web-ext lint --source-dir dist
       - name: Package it
         run: npx web-ext build --source-dir dist --overwrite-dest
-      - uses: actions/upload-artifact@v4
+      # v3, on purpose. This Forgejo serves the actions from data.forgejo.org and answers
+      # the artifact API as a GitHub Enterprise Server without v2 of it, so v4 ends every
+      # time with "not currently supported on GHES"; v3 is the one that works here. The
+      # move to v4 assumed v3 had been disabled and was uploading nothing -- the log of the
+      # run it replaced says the package went up fine (postulo/postulo#251).
+      - uses: actions/upload-artifact@v3
         with:
           name: firefox-package
           path: web-ext-artifacts
@@ -47,7 +52,7 @@ jobs:
         run: npx web-ext lint --source-dir dist
       - name: Package it
         run: npx web-ext build --source-dir dist --overwrite-dest
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v3
         with:
           name: firefox-package-${{ github.ref_name }}
           path: web-ext-artifacts/*.zip
