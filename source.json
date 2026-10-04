@@ -1,5 +1,5 @@
 {
   "repository": "https://source.tiagoagueda.com/postulo/postulo-chromium.git",
-  "ref": "fdb76863fbbcfba515f8de6ead6978a31d5f2bb7",
+  "ref": "bd8234117f47bb2f843b326137991bbaab2c01d7",
   "note": "The tag of postulo-chromium this Firefox package is built from, so that a source submission builds to the same bytes twice and the two extensions stay the same extension. postulo-chromium has cut no tag yet, so this is the full commit SHA of its main at the time; replace it with the tag at the first release. `npm run check:pin` refuses anything that moves."
 }
