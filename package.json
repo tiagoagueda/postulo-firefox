@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "check:pin": "node scripts/check-pin.mjs",
+    "test": "node --test",
     "build": "node scripts/build.mjs",
     "lint": "npm run build && web-ext lint --source-dir dist",
     "package": "npm run build && web-ext build --source-dir dist --overwrite-dest",

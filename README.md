@@ -53,7 +53,9 @@ one, and the Firefox and Chromium extensions quietly stop being the same extensi
 `npm run check:pin`, which CI runs before the build, refuses a branch or `HEAD`, and — once
 postulo-chromium cuts its first tag — refuses any pin that is not the latest of them.
 postulo-chromium has no tag yet, so the pin is the full commit SHA of its `main`; the check
-says how far that is from the tip, and the first tag replaces it.
+fails when `main` is ahead of it by commits that change `src/` (naming them), so a fix to the
+shared source cannot skip this package unnoticed, and the first tag replaces it. `npm test`
+holds that rule against a throwaway repository.
 
 To ship a new version: tag postulo-chromium, put the tag in `source.json`, tag this
 repository `vX.Y.Z` — CI then builds, lints and leaves the zip as an artifact — and run

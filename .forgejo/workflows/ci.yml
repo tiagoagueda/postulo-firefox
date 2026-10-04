@@ -13,6 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: npm ci
+      - name: Test the pin check
+        run: npm test
       - name: Check the pin does not move
         run: npm run check:pin
       - name: Assemble the Firefox build from the shared source
