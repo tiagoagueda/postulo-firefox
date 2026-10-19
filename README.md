@@ -39,6 +39,7 @@ Everything in postulo-chromium's README about privacy and setup applies here.
 ```sh
 npm ci
 npm run check:pin  # source.json pins something that cannot move
+npm run audit      # no new high or critical advisory in the development chain
 npm run build      # clones postulo-chromium at the pinned ref and assembles dist/
 npm run lint       # web-ext lint on dist/
 npm run package    # a zip under web-ext-artifacts/
@@ -50,14 +51,16 @@ npm run package    # a zip under web-ext-artifacts/
 never a branch. addons.mozilla.org rebuilds a source submission and compares it to the
 package: with `"ref": "main"` the reviewer's build is a later extension than the submitted
 one, and the Firefox and Chromium extensions quietly stop being the same extension.
-`npm run check:pin`, which CI runs before the build, refuses a branch or `HEAD`, and — once
-postulo-chromium cuts its first tag — refuses any pin that is not the latest of them.
+`npm run check:pin`, which CI runs before the build, refuses a branch, `HEAD`, a tag name or a
+short SHA (a tag can be moved: the pin is always a full 40-hex commit), refuses any repository
+but postulo-chromium's (the build runs that repository's `scripts/build.mjs`), and — once
+postulo-chromium cuts its first tag — refuses any pin that is not the commit of the latest of them.
 postulo-chromium has no tag yet, so the pin is the full commit SHA of its `main`; the check
 fails when `main` is ahead of it by commits that change `src/` (naming them), so a fix to the
 shared source cannot skip this package unnoticed, and the first tag replaces it. `npm test`
 holds that rule against a throwaway repository.
 
-To ship a new version: tag postulo-chromium, put the tag in `source.json`, tag this
+To ship a new version: tag postulo-chromium, put the full SHA of the commit that tag points at in `source.json`, tag this
 repository `vX.Y.Z` — CI then builds, lints and leaves the zip as an artifact — and run
 `npm run sign` (or upload that zip on addons.mozilla.org). Signing is not done in CI: it
 needs the AMO credentials.
