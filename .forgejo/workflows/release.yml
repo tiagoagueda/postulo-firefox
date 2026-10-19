@@ -22,7 +22,15 @@ jobs:
       image: node:22-bookworm
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Everything after this runs code the pull request chooses (npm's lifecycle scripts,
+          # then the build of the repository source.json names); the token stays out of .git/config.
+          persist-credentials: false
       - run: npm ci
+      - name: Refuse a high advisory in the dev chain
+        # web-ext runs on a contributor's machine and in CI, not in the extension; scripts/audit.mjs
+        # fails on a new high or critical advisory and names the one allowed (no fixed release).
+        run: npm run audit
       - name: Check the pin does not move
         run: npm run check:pin
       - name: Assemble the Firefox build from the shared source

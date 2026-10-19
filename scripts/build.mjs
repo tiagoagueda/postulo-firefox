@@ -11,8 +11,17 @@
 import { execFileSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
+import { assertAllowedRepository, isFullSha } from "./pin.mjs";
 
 const pin = JSON.parse(readFileSync("source.json", "utf8"));
+
+// Before anything is cloned or run: the repository is the one this package is built from, and
+// the pin is a commit that cannot move (see scripts/pin.mjs).
+assertAllowedRepository(pin.repository);
+if (!isFullSha(pin.ref)) {
+  throw new Error(`source.json pins "${pin.ref}", which is not a full commit SHA; a branch or a tag can be moved.`);
+}
+
 const checkout = join(".source", "postulo-chromium");
 
 rmSync(".source", { recursive: true, force: true });
