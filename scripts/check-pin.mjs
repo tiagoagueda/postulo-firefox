@@ -6,11 +6,14 @@
 // reviewer's build is not the one that was submitted. So:
 //
 //   - a branch name, or HEAD, is refused outright;
-//   - when postulo-chromium has tags, the pin has to be the latest of them, by name or by
-//     the commit it points at -- the Firefox package is the Chromium release, not a commit
-//     somewhere near it;
-//   - until postulo-chromium cuts its first tag the pin has to be a full commit SHA, and
-//     it has to be current: a pin behind main by commits that change `src/` is refused,
+//   - the pin is a full 40-hex commit SHA, always, never a tag name: a tag can be deleted and
+//     created again on another commit, and the build clones over the network at build time;
+//   - the repository is postulo-chromium's, the only one this package is built from (the
+//     build runs that repository's scripts/build.mjs);
+//   - when postulo-chromium has tags, the pin has to be the commit of the latest of them --
+//     the Firefox package is the Chromium release, not a commit somewhere near it; the tag's
+//     name is only printed beside it;
+//   - until postulo-chromium cuts its first tag the pin has to be current: a pin behind main by commits that change `src/` is refused,
 //     naming them, because those are changes the Firefox package would silently lack.
 //     Behind main by commits that touch nothing the extension is built from (its tests,
 //     its CI, its README) is only said.
@@ -24,8 +27,15 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { assertAllowedRepository, isFullSha } from "./pin.mjs";
 
 const pin = JSON.parse(readFileSync("source.json", "utf8"));
+try {
+  assertAllowedRepository(pin.repository);
+} catch (error) {
+  console.error(error.message);
+  process.exit(1);
+}
 const ref = String(pin.ref || "").trim();
 
 function remote(...args) {
@@ -47,38 +57,53 @@ function fail(...lines) {
 }
 
 const heads = remote("--heads").map((entry) => ({ ...entry, name: entry.name.replace(/^refs\/heads\//, "") }));
-const tags = remote("--tags", "--refs").map((entry) => ({ ...entry, name: entry.name.replace(/^refs\/tags\//, "") }));
+// An annotated tag is listed twice: the tag object, and `name^{}`, the commit it points at. The
+// commit is what a pin is compared with.
+const tagCommits = new Map();
+for (const entry of remote("--tags")) {
+  const name = entry.name.replace(/^refs\/tags\//, "");
+  const peeled = name.endsWith("^{}");
+  const key = peeled ? name.slice(0, -3) : name;
+  if (peeled || !tagCommits.has(key)) {
+    tagCommits.set(key, entry.sha);
+  }
+}
+const tags = [...tagCommits].map(([name, sha]) => ({ name, sha }));
 tags.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
 const latest = tags.at(-1) || null;
-const isSha = /^[0-9a-f]{40}$/.test(ref);
 
 if (!ref) {
-  fail("source.json has no ref: pin the tag of postulo-chromium this package is built from.");
+  fail("source.json has no ref: pin the full commit SHA of postulo-chromium this package is built from.");
 }
 
 if (ref === "HEAD" || heads.some((head) => head.name === ref)) {
   fail(
     `source.json pins "${ref}", which is a branch and moves.`,
     latest
-      ? `Pin ${latest.name} instead: a release is built from a release.`
-      : "Pin the tag of a postulo-chromium release, or its full commit SHA until there is one.",
+      ? `Pin the commit of ${latest.name} (${latest.sha}) instead: a release is built from a release.`
+      : "Pin the full commit SHA of a postulo-chromium commit.",
+  );
+}
+
+if (!isFullSha(ref)) {
+  const named = tags.find((tag) => tag.name === ref);
+  fail(
+    `source.json pins "${ref}", which is not a full commit SHA.`,
+    named
+      ? `That is the tag ${named.name}, and a tag can be moved: pin the commit it points at today, ${named.sha}.`
+      : "Pin the full 40-hex commit SHA; a branch or a tag name can be moved under the build.",
   );
 }
 
 if (latest) {
-  if (ref !== latest.name && ref !== latest.sha) {
+  if (ref !== latest.sha) {
     fail(
-      `source.json pins "${ref}", but postulo-chromium's latest tag is ${latest.name} (${latest.sha}).`,
-      "The Firefox package and the Chromium release have drifted; move the pin.",
+      `source.json pins ${ref}, but postulo-chromium's latest tag is ${latest.name} (${latest.sha}).`,
+      "The Firefox package and the Chromium release have drifted; move the pin to that commit.",
     );
   }
-  console.log(`source.json pins ${ref}, which is postulo-chromium's latest tag ${latest.name}.`);
+  console.log(`source.json pins ${ref}, the commit of postulo-chromium's latest tag ${latest.name}.`);
 } else {
-  if (!isSha) {
-    fail(
-      `source.json pins "${ref}", which is neither a tag of postulo-chromium -- it has none yet -- nor a full commit SHA.`,
-    );
-  }
   const tip = heads.find((head) => head.name === "main");
   if (tip && tip.sha === ref) {
     console.log(`source.json pins the commit ${ref}: postulo-chromium has no tag yet, and this is the tip of main.`);
