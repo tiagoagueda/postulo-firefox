@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "check:pin": "node scripts/check-pin.mjs",
+    "audit": "node scripts/audit.mjs",
     "test": "node --test",
     "build": "node scripts/build.mjs",
     "lint": "npm run build && web-ext lint --source-dir dist",
@@ -14,7 +15,7 @@
     "sign": "npm run build && web-ext sign --source-dir dist --channel unlisted"
   },
   "devDependencies": {
-    "web-ext": "^8.0.0"
+    "web-ext": "^10.8.0"
   },
   "license": "AGPL-3.0-or-later"
 }
