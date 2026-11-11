@@ -1,0 +1,14 @@
+blank_issues_enabled: true
+contact_links:
+  - name: A security problem is not a public issue
+    url: https://source.tiagoagueda.com/postulo/postulo/src/branch/main/SECURITY.md
+    about: Report a vulnerability privately, as SECURITY.md describes. Do not open an issue.
+  - name: A posting read wrongly
+    url: https://source.tiagoagueda.com/postulo/postulo-chromium/issues/new/choose
+    about: The extension's code, and how it reads a page, is postulo-chromium's. Report it there.
+  - name: A wrong or missing translation
+    url: https://source.tiagoagueda.com/postulo/postulo-chromium/src/branch/main/README.md#translating
+    about: The Firefox extension's words are postulo-chromium's; correct one in Weblate rather than reporting it here.
+  - name: A question about using the extension
+    url: https://source.tiagoagueda.com/postulo/postulo-firefox/src/branch/main/README.md
+    about: The README says what Firefox does differently; postulo-chromium's README covers setting it up.

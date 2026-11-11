@@ -1,0 +1,44 @@
+name: Feature request
+about: Ask for something the Firefox package does not do yet.
+title: "[Feature] "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you. Write in whatever language you can; English is easiest for the maintainer to act on.
+
+        Describe the problem before the solution: a feature is judged by the problem it removes. Do not paste personal details such as a CV, an address or the name of somebody you applied to.
+
+        The extension's code, for both browsers, is in postulo-chromium: a feature of the extension itself is asked for [there](https://source.tiagoagueda.com/postulo/postulo-chromium/issues/new/choose). Ask here for what concerns Firefox alone: the package, its listing on addons.mozilla.org, Firefox for Android, the forks.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem, and who has it
+      description: What gets in the way, for whom, and how often.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you propose
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What else you considered
+      description: Other ways to solve it, and what you do today.
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Whose job is it?
+      description: If the core has to change too (what the capture API accepts, how a page is read on the server), it gets an issue of its own.
+      options:
+        - The Firefox package's
+        - The extension's code (postulo-chromium)
+        - The core's (postulo/postulo)
+        - Not sure
+    validations:
+      required: true

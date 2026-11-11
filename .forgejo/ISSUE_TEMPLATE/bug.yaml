@@ -1,0 +1,91 @@
+name: Bug report
+about: The Firefox package does not install, sign or work, or does something it does not do in Chromium.
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time. Write in whatever language you can; English is easiest for the maintainer to act on, but a report in another language is better than none.
+
+        **Is it a security problem?** Do not post it here, this page is public. Follow [SECURITY.md](https://source.tiagoagueda.com/postulo/postulo/src/branch/main/SECURITY.md).
+
+        **Remove personal details before you paste anything.** Postulo holds CVs, home addresses and the names of the people somebody is applying to. A log or a screenshot is where those leak: blank out names, addresses, e-mail addresses, company and listing details, tokens and cookies first.
+
+        **Which repository?** This one only packages the extension for Firefox. A problem with the package belongs here: installing, signing, permissions, or something that works in Chromium and not in Firefox. **A posting read wrongly belongs in [postulo-chromium](https://source.tiagoagueda.com/postulo/postulo-chromium/issues/new/choose)**, which holds the extension's code for both browsers.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What it is about
+      options:
+        - Installing, signing or updating the extension
+        - A permission Firefox asks for or refuses
+        - Something that works in Chromium and not in Firefox
+        - Other (say so below)
+    validations:
+      required: true
+  - type: input
+    id: extension-version
+    attributes:
+      label: Extension version
+      description: Shown on Firefox's add-ons page.
+      placeholder: "0.5.0"
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and its version
+      description: Firefox, Firefox for Android, or a fork (LibreWolf, Zen, Waterfox, Floorp).
+      placeholder: Firefox 142
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: Android 16
+    validations:
+      required: true
+  - type: input
+    id: postulo-version
+    attributes:
+      label: Postulo version it sends to
+      description: The foot of every page shows the version. On the `:dev` image, give the pinned tag (`<version>-dev.<short sha>`), because `:dev` moves.
+      placeholder: "0.5.0"
+    validations:
+      required: true
+  - type: input
+    id: job-board
+    attributes:
+      label: Which job board or kind of page, if it matters
+      description: The name of the site is enough. Do not paste the address; a posting's address can say where somebody is applying.
+      placeholder: A company's own careers page
+  - type: textarea
+    id: steps
+    attributes:
+      label: What you did, step by step
+      placeholder: |
+        1. Open ...
+        2. Press ...
+    validations:
+      required: true
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: "*Settings → Testing and troubleshooting → Download the log* saves what the extension did, without the token or anything from the pages; Firefox's browser console may say more. Attach it, or paste the part that bears on it, with personal details removed first."
+      render: text
