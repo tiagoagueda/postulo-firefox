@@ -12,7 +12,7 @@
     "lint": "npm run build && web-ext lint --source-dir dist",
     "package": "npm run build && web-ext build --source-dir dist --overwrite-dest",
     "run": "npm run build && web-ext run --source-dir dist",
-    "sign": "npm run build && web-ext sign --source-dir dist --channel unlisted"
+    "sign": "node scripts/sign.mjs"
   },
   "devDependencies": {
     "web-ext": "^10.8.0"

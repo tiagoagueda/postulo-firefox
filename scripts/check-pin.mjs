@@ -165,7 +165,7 @@ function clone() {
   if (!clonedDir) {
     clonedDir = mkdtempSync(join(tmpdir(), "postulo-pin-"));
     process.on("exit", () => rmSync(clonedDir, { recursive: true, force: true }));
-    execFileSync("git", ["clone", "--quiet", "--bare", "--filter=blob:none", "--no-tags", pin.repository, clonedDir], { stdio: "pipe" });
+    execFileSync("git", ["-c", "core.autocrlf=false", "-c", "core.eol=lf", "clone", "--quiet", "--bare", "--filter=blob:none", "--no-tags", pin.repository, clonedDir], { stdio: "pipe" });
   }
   return clonedDir;
 }

@@ -24,10 +24,21 @@ if (!isFullSha(pin.ref)) {
 
 const checkout = join(".source", "postulo-chromium");
 
+// The bytes of the package must not depend on the machine that builds it: git is told to check
+// out LF whatever core.autocrlf says (a Windows checkout would otherwise copy CRLF into the
+// package), and the child processes get the few variables they need, not the environment --
+// under `npm run sign` that holds the AMO credentials (SEC3-006).
+const gitConfig = ["-c", "core.autocrlf=false", "-c", "core.eol=lf"];
+const childEnv = Object.fromEntries(
+  ["PATH", "Path", "SystemRoot", "TEMP", "TMP", "TMPDIR", "HOME", "USERPROFILE"]
+    .filter((name) => process.env[name] !== undefined)
+    .map((name) => [name, process.env[name]]),
+);
+
 rmSync(".source", { recursive: true, force: true });
 mkdirSync(".source", { recursive: true });
-execFileSync("git", ["clone", "--quiet", "--no-checkout", pin.repository, checkout], { stdio: "inherit" });
-execFileSync("git", ["-C", checkout, "checkout", "--quiet", pin.ref], { stdio: "inherit" });
+execFileSync("git", [...gitConfig, "clone", "--quiet", "--no-checkout", pin.repository, checkout], { stdio: "inherit", env: childEnv });
+execFileSync("git", [...gitConfig, "-C", checkout, "checkout", "--quiet", pin.ref], { stdio: "inherit", env: childEnv });
 
 // Which commit that actually was. A pin that moved between two builds is the one thing
 // this repository exists to prevent, so the build says what it built and refuses a pin
@@ -40,7 +51,7 @@ if (branches) {
   throw new Error(`source.json pins "${pin.ref}", which is a branch and moves; pin a tag or a commit SHA.`);
 }
 
-execFileSync("node", ["scripts/build.mjs", "firefox"], { cwd: checkout, stdio: "inherit" });
+execFileSync(process.execPath, ["scripts/build.mjs", "firefox"], { cwd: checkout, stdio: "inherit", env: childEnv });
 
 const built = join(checkout, "dist", "firefox");
 if (!existsSync(join(built, "manifest.json"))) {

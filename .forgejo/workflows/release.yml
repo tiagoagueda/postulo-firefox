@@ -1,6 +1,6 @@
 # The zip to upload to addons.mozilla.org, built from the tag rather than from a working
 # copy, so that what is submitted is what the tag says. Signing stays a hand operation
-# (`npm run sign`): it needs the AMO credentials, which do not belong in a runner.
+# (`npm run sign`, which refuses anything but a clean checkout of the tag): it needs the AMO credentials, which do not belong in a runner.
 #
 # A workflow of its own, on purpose. This job used to sit in ci.yml behind
 # `if: startsWith(github.ref, 'refs/tags/v')` and `needs: build`, and on every push to
@@ -26,6 +26,14 @@ jobs:
           # Everything after this runs code the pull request chooses (npm's lifecycle scripts,
           # then the build of the repository source.json names); the token stays out of .git/config.
           persist-credentials: false
+          # The whole history, to ask below whether the tag's commit is on main.
+          fetch-depth: 0
+      - name: Check the tag is on main and names the version
+        run: |
+          set -eu
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main || { echo "The tag's commit is not on main."; exit 1; }
+          version="${GITHUB_REF_NAME#v}"
+          test "$version" = "$(node -p "require('./package.json').version")" || { echo "The tag $GITHUB_REF_NAME is not package.json's version."; exit 1; }
       - run: npm ci
       - name: Refuse a high advisory in the dev chain
         # web-ext runs on a contributor's machine and in CI, not in the extension; scripts/audit.mjs
@@ -35,6 +43,15 @@ jobs:
         run: npm run check:pin
       - name: Assemble the Firefox build from the shared source
         run: npm run build
+      - name: Check the built manifest names the tag's version
+        run: |
+          set -eu
+          version="${GITHUB_REF_NAME#v}"
+          test "$version" = "$(node -p "require('./dist/manifest.json').version")" || { echo "dist/manifest.json is not version $version."; exit 1; }
+      - name: Print the SHA-256 of every file in dist/
+        # What `npm run sign` prints for the same tag must match this list: it is how a signed
+        # package is compared with the one this tag built.
+        run: node scripts/digests.mjs dist
       - name: Lint it
         run: npx web-ext lint --source-dir dist
       - name: Package it

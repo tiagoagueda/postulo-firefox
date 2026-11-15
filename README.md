@@ -65,8 +65,10 @@ What the privacy policy says holds for the pinned commit, not necessarily for `m
 
 To ship a new version: tag postulo-chromium, put the full SHA of the commit that tag points at in `source.json`, tag this
 repository `vX.Y.Z` — CI then builds, lints and leaves the zip as an artifact — and run
-`npm run sign` (or upload that zip on addons.mozilla.org). Signing is not done in CI: it
-needs the AMO credentials.
+`npm run sign` from a clean checkout of that tag (it refuses a dirty tree, a HEAD that is not
+the `vX.Y.Z` tag of `package.json`'s version, and a pin the check refuses), or upload the zip on
+addons.mozilla.org. The release workflow and `npm run sign` both print the SHA-256 of every file in
+`dist/`; the lists must match. Signing is not done in CI: it needs the AMO credentials.
 
 ## Licence
 
