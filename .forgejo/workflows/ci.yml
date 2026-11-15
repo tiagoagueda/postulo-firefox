@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Weekly, so that a new tag or a security fix on postulo-chromium's main turns this red
+  # without anybody pushing here (scripts/check-pin.mjs).
+  schedule:
+    - cron: "17 5 * * 1"
 
 jobs:
   build:

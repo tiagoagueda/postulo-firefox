@@ -2,7 +2,7 @@
 // src/, against a throwaway repository standing in for postulo-chromium (no tag, as today).
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -107,4 +107,70 @@ test("a source.json naming any other repository is refused by the pin check and 
   assert.notEqual(build.code, 0);
   assert.match(build.out, /not built from/);
   assert.equal(existsSync(join(build.cwd, ".source")), false, "nothing was cloned");
+});
+
+test("a tag exists and main is ahead of it by a commit that changes src/: the commit is named, the check passes", () => {
+  const repo = fixture();
+  const tagged = commit(repo, "src/a.js", "1", "first");
+  git(repo, "tag", "v1.0.0");
+  commit(repo, "src/a.js", "2", "Keep less of a sent capture");
+  const { code, out } = run(repo, tagged);
+  assert.equal(code, 0, out);
+  assert.match(out, /ahead of v1\.0\.0 by 1 commit\(s\) that change src\//);
+  assert.match(out, /Keep less of a sent capture/);
+});
+
+test("a tag and a commit on main since it that carries a Security: trailer fails, naming it", () => {
+  const repo = fixture();
+  const tagged = commit(repo, "src/a.js", "1", "first");
+  git(repo, "tag", "v1.0.0");
+  commit(repo, "src/a.js", "2", "Stop sending the token\n\nSecurity: SEC3-099");
+  const { code, out } = run(repo, tagged);
+  assert.equal(code, 1);
+  assert.match(out, /Stop sending the token/);
+  assert.match(out, /lacks a security fix/);
+});
+
+test("a commit since the tag that leaves src/ alone is not listed", () => {
+  const repo = fixture();
+  const tagged = commit(repo, "src/a.js", "1", "first");
+  git(repo, "tag", "v1.0.0");
+  commit(repo, "README.md", "x", "Security: words only");
+  const { code, out } = run(repo, tagged);
+  assert.equal(code, 0, out);
+  assert.doesNotMatch(out, /ahead of/);
+});
+
+test("a tag that is not a version is ignored, even when it sorts last", () => {
+  const repo = fixture();
+  const tagged = commit(repo, "src/a.js", "1", "first");
+  git(repo, "tag", "v1.0.0");
+  commit(repo, "src/a.js", "2", "second");
+  git(repo, "tag", "v1.1.0-rc1");
+  git(repo, "tag", "zzz");
+  const { code, out } = run(repo, tagged);
+  assert.equal(code, 0, out);
+  assert.match(out, /Ignoring the tag v1\.1\.0-rc1 .*not a version/);
+  assert.match(out, /Ignoring the tag zzz/);
+  assert.match(out, /latest tag v1\.0\.0/);
+});
+
+test("a version tag on a commit that is not on main is ignored", () => {
+  const repo = fixture();
+  const tagged = commit(repo, "src/a.js", "1", "first");
+  git(repo, "tag", "v1.0.0");
+  git(repo, "checkout", "-q", "-b", "side");
+  commit(repo, "src/a.js", "evil", "Somebody's side branch");
+  git(repo, "tag", "v9.0.0");
+  git(repo, "checkout", "-q", "main");
+  const { code, out } = run(repo, tagged);
+  assert.equal(code, 0, out);
+  assert.match(out, /Ignoring the tag v9\.0\.0 .*not on main/);
+  assert.match(out, /latest tag v1\.0\.0/);
+});
+
+test("the workflow has a weekly schedule, so a new tag or a marked fix turns CI red without a push", () => {
+  const ci = readFileSync(join(dirname(SCRIPT), "..", ".forgejo", "workflows", "ci.yml"), "utf8");
+  assert.match(ci, /^\s*schedule:\s*$/m);
+  assert.match(ci, /cron:\s*"[^"]+"/);
 });

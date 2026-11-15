@@ -55,10 +55,13 @@ one, and the Firefox and Chromium extensions quietly stop being the same extensi
 short SHA (a tag can be moved: the pin is always a full 40-hex commit), refuses any repository
 but postulo-chromium's (the build runs that repository's `scripts/build.mjs`), and — once
 postulo-chromium cuts its first tag — refuses any pin that is not the commit of the latest of them.
-postulo-chromium has no tag yet, so the pin is the full commit SHA of its `main`; the check
-fails when `main` is ahead of it by commits that change `src/` (naming them), so a fix to the
-shared source cannot skip this package unnoticed, and the first tag replaces it. `npm test`
-holds that rule against a throwaway repository.
+Only a tag that is a version (`vX.Y.Z`) and whose commit is on postulo-chromium's `main` counts as a
+release. After the tag the check goes on watching: it lists the commits on `main` since it that change `src/`,
+and fails when one carries a `Security:` trailer. CI also runs it every Monday, so a new tag or a marked fix
+turns this repository red without a push. `npm test` holds these rules against a throwaway repository.
+
+What the privacy policy says holds for the pinned commit, not necessarily for `main`: read postulo-chromium's
+`PRIVACY.md` at the commit `source.json` names.
 
 To ship a new version: tag postulo-chromium, put the full SHA of the commit that tag points at in `source.json`, tag this
 repository `vX.Y.Z` — CI then builds, lints and leaves the zip as an artifact — and run
