@@ -87,5 +87,5 @@ body:
     id: logs
     attributes:
       label: Logs
-      description: "*Settings → Testing and troubleshooting → Download the log* saves what the extension did, without the token or anything from the pages; Firefox's browser console may say more. Attach it, or paste the part that bears on it, with personal details removed first."
+      description: "*Settings → Testing and troubleshooting → Download the log* saves what the extension did, without the token, the pages or what was read from them. It does name the site of each page you captured and the address of your Postulo: remove or replace those hosts before attaching it, or paste only the lines that bear on the problem. Firefox's browser console may say more."
       render: text
