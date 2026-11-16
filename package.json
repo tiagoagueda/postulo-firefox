@@ -7,6 +7,7 @@
   "scripts": {
     "check:pin": "node scripts/check-pin.mjs",
     "audit": "node scripts/audit.mjs",
+    "check:locales": "node scripts/check-locales.mjs",
     "test": "node --test",
     "build": "node scripts/build.mjs",
     "lint": "npm run build && web-ext lint --source-dir dist",

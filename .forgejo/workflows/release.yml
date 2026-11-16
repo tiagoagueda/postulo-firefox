@@ -43,6 +43,8 @@ jobs:
         run: npm run check:pin
       - name: Assemble the Firefox build from the shared source
         run: npm run build
+      - name: Check every language the source ships is in the package
+        run: npm run check:locales
       - name: Check the built manifest names the tag's version
         run: |
           set -eu

@@ -39,6 +39,7 @@ Everything in postulo-chromium's README about privacy and setup applies here.
 ```sh
 npm ci
 npm run check:pin  # source.json pins something that cannot move
+npm run check:locales  # after a build: every language selected for this release is in the package (release-languages.json)
 npm run audit      # no new high or critical advisory in the development chain
 npm run build      # clones postulo-chromium at the pinned ref and assembles dist/
 npm run lint       # web-ext lint on dist/
